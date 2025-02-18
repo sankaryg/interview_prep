@@ -16,6 +16,12 @@ export async function registerRoutes(app: Express) {
   // Set up authentication first
   setupAuth(app);
 
+  app.post("/api/user/interests", ensureAuthenticated, async (req, res) => {
+    const { interests } = req.body;
+    const updatedUser = await storage.updateUserInterests(req.user!.id, interests);
+    res.json(updatedUser);
+  });
+
   // Serve Sanity Studio at /studio route
   app.use('/studio', express.static('sanity/dist'));
 

@@ -14,8 +14,16 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDueOnly, setShowDueOnly] = useState(true);
 
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const response = await fetch("/api/user");
+      return response.json();
+    },
+  });
+
   const { data: flashcards, isLoading } = useQuery<Flashcard[]>({
-    queryKey: ["/api/flashcards", selectedCategory, showDueOnly],
+    queryKey: ["/api/flashcards", selectedCategory, showDueOnly, user?.interests],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCategory) params.append("category", selectedCategory);

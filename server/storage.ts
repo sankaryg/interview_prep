@@ -45,6 +45,15 @@ export class MemStorage implements IStorage {
     return this.users.find((u) => u.username === username) ?? null;
   }
 
+  async updateUserInterests(userId: string, interests: string[]): Promise<User> {
+    const user = this.users.find((u) => u.id === userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    user.interests = interests;
+    return user;
+  }
+
   async createUser(userData: InsertUser): Promise<User> {
     const user: User = {
       id: nanoid(),
