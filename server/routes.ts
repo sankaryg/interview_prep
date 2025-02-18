@@ -22,9 +22,9 @@ export async function registerRoutes(app: Express) {
   });
 
   app.patch("/api/flashcards/:id/difficulty", async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
     const { difficulty } = req.body;
-    
+
     if (typeof difficulty !== "number" || difficulty < -1 || difficulty > 1) {
       return res.status(400).json({ error: "Invalid difficulty value" });
     }
@@ -38,7 +38,7 @@ export async function registerRoutes(app: Express) {
   });
 
   app.post("/api/flashcards/:id/review", async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
     try {
       const flashcard = await storage.updateFlashcardReview(id);
       res.json(flashcard);

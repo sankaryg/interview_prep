@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const flashcards = pgTable("flashcards", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   question: text("question").notNull(),
   answer: text("answer").notNull(),
   category: text("category").notNull(),
