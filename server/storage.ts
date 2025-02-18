@@ -1,67 +1,85 @@
-import { flashcards, type Flashcard, type InsertFlashcard } from "@shared/schema";
+import { flashcards, type Flashcard, type InsertFlashcard, type User, type InsertUser, users } from "@shared/schema";
 import { calculateNextReview } from "@shared/spaced-repetition";
 import { nanoid } from "nanoid";
+import session from "express-session";
+import createMemoryStore from "memorystore";
+
+const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
-  getFlashcards(): Promise<Flashcard[]>;
-  getFlashcardsByCategory(category: string): Promise<Flashcard[]>;
-  getDueFlashcards(): Promise<Flashcard[]>;
-  updateFlashcardDifficulty(id: string, difficulty: number): Promise<Flashcard>;
-  createFlashcard(flashcard: InsertFlashcard): Promise<Flashcard>;
-  updateFlashcardReview(id: string, quality: number): Promise<Flashcard>;
+  // User operations
+  getUser(id: string): Promise<User>;
+  getUserByUsername(username: string): Promise<User | null>;
+  createUser(user: InsertUser): Promise<User>;
+
+  // Flashcard operations
+  getFlashcards(userId: string): Promise<Flashcard[]>;
+  getFlashcardsByCategory(userId: string, category: string): Promise<Flashcard[]>;
+  getDueFlashcards(userId: string): Promise<Flashcard[]>;
+  updateFlashcardDifficulty(userId: string, id: string, difficulty: number): Promise<Flashcard>;
+  createFlashcard(userId: string, flashcard: InsertFlashcard): Promise<Flashcard>;
+  updateFlashcardReview(userId: string, id: string, quality: number): Promise<Flashcard>;
+
+  // Session store
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
-  private flashcards: Flashcard[] = [
-    {
-      id: "1",
-      question: "What is React?",
-      answer: "React is a JavaScript library for building user interfaces, particularly single-page applications. It's used for handling the view layer and allows you to create reusable UI components.",
-      category: "React",
-      difficulty: 0,
-      timesReviewed: 0,
-      lastReviewed: null,
-      easinessFactor: 2.5,
-      interval: 0,
-      nextReviewDate: null,
-    },
-    {
-      id: "2",
-      question: "Explain closures in JavaScript",
-      answer: "A closure is the combination of a function and the lexical environment within which that function was declared. This environment consists of any local variables that were in-scope at the time the closure was created.",
-      category: "JavaScript",
-      difficulty: 0,
-      timesReviewed: 0,
-      lastReviewed: null,
-      easinessFactor: 2.5,
-      interval: 0,
-      nextReviewDate: null,
-    },
-  ];
+  private users: User[] = [];
+  private flashcards: Flashcard[] = [];
+  public sessionStore: session.Store;
 
-  async getFlashcards(): Promise<Flashcard[]> {
-    return this.flashcards;
+  constructor() {
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    });
   }
 
-  async getDueFlashcards(): Promise<Flashcard[]> {
+  async getUser(id: string): Promise<User> {
+    const user = this.users.find((u) => u.id === id);
+    if (!user) throw new Error("User not found");
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | null> {
+    return this.users.find((u) => u.username === username) ?? null;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const user: User = {
+      id: nanoid(),
+      ...userData,
+      createdAt: new Date().toISOString(),
+    };
+    this.users.push(user);
+    return user;
+  }
+
+  async getFlashcards(userId: string): Promise<Flashcard[]> {
+    return this.flashcards.filter((card) => card.userId === userId);
+  }
+
+  async getDueFlashcards(userId: string): Promise<Flashcard[]> {
     const now = new Date();
     return this.flashcards.filter(card => {
+      if (card.userId !== userId) return false;
       if (!card.nextReviewDate) return true;
       return new Date(card.nextReviewDate) <= now;
     });
   }
 
-  async getFlashcardsByCategory(category: string): Promise<Flashcard[]> {
-    return this.flashcards.filter((card) => card.category === category);
+  async getFlashcardsByCategory(userId: string, category: string): Promise<Flashcard[]> {
+    return this.flashcards.filter((card) => card.userId === userId && card.category === category);
   }
 
-  async createFlashcard(flashcard: InsertFlashcard): Promise<Flashcard> {
+  async createFlashcard(userId: string, flashcard: InsertFlashcard): Promise<Flashcard> {
     const newFlashcard: Flashcard = {
       ...flashcard,
       id: nanoid(),
+      userId,
       timesReviewed: 0,
       lastReviewed: null,
-      easinessFactor: 2.5,
+      easinessFactor: "2.5",
       interval: 0,
       nextReviewDate: null,
     };
@@ -69,8 +87,8 @@ export class MemStorage implements IStorage {
     return newFlashcard;
   }
 
-  async updateFlashcardDifficulty(id: string, difficulty: number): Promise<Flashcard> {
-    const flashcard = this.flashcards.find((f) => f.id === id);
+  async updateFlashcardDifficulty(userId: string, id: string, difficulty: number): Promise<Flashcard> {
+    const flashcard = this.flashcards.find((f) => f.id === id && f.userId === userId);
     if (!flashcard) {
       throw new Error("Flashcard not found");
     }
@@ -78,19 +96,19 @@ export class MemStorage implements IStorage {
     return flashcard;
   }
 
-  async updateFlashcardReview(id: string, quality: number): Promise<Flashcard> {
-    const flashcard = this.flashcards.find((f) => f.id === id);
+  async updateFlashcardReview(userId: string, id: string, quality: number): Promise<Flashcard> {
+    const flashcard = this.flashcards.find((f) => f.id === id && f.userId === userId);
     if (!flashcard) {
       throw new Error("Flashcard not found");
     }
 
     const { easinessFactor, interval, nextReviewDate } = calculateNextReview(quality, {
-      easinessFactor: flashcard.easinessFactor,
+      easinessFactor: Number(flashcard.easinessFactor),
       interval: flashcard.interval,
       nextReviewDate: flashcard.nextReviewDate,
     });
 
-    flashcard.easinessFactor = easinessFactor;
+    flashcard.easinessFactor = easinessFactor.toString();
     flashcard.interval = interval;
     flashcard.nextReviewDate = nextReviewDate;
     flashcard.timesReviewed += 1;
