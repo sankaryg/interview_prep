@@ -1,13 +1,5 @@
 import { flashcards, type Flashcard, type InsertFlashcard } from "@shared/schema";
-import { createClient } from "@sanity/client";
-
-const client = createClient({
-  projectId: process.env.SANITY_PROJECT_ID!,
-  dataset: process.env.SANITY_DATASET!,
-  apiVersion: "2024-02-18",
-  token: process.env.SANITY_TOKEN!,
-  useCdn: false,
-});
+import { nanoid } from "nanoid";
 
 export interface IStorage {
   getFlashcards(): Promise<Flashcard[]>;
@@ -17,99 +9,65 @@ export interface IStorage {
   updateFlashcardReview(id: string): Promise<Flashcard>;
 }
 
-export class SanityStorage implements IStorage {
-  async getFlashcards(): Promise<Flashcard[]> {
-    const query = `*[_type == "flashcard"] {
-      "id": _id,
-      question,
-      answer,
-      category,
-      difficulty,
-      "timesReviewed": coalesce(timesReviewed, 0),
-      "lastReviewed": lastReviewed
-    }`;
+export class MemStorage implements IStorage {
+  private flashcards: Flashcard[] = [
+    {
+      id: "1",
+      question: "What is React?",
+      answer: "React is a JavaScript library for building user interfaces, particularly single-page applications. It's used for handling the view layer and allows you to create reusable UI components.",
+      category: "React",
+      difficulty: 0,
+      timesReviewed: 0,
+      lastReviewed: null,
+    },
+    {
+      id: "2",
+      question: "Explain closures in JavaScript",
+      answer: "A closure is the combination of a function and the lexical environment within which that function was declared. This environment consists of any local variables that were in-scope at the time the closure was created.",
+      category: "JavaScript",
+      difficulty: 0,
+      timesReviewed: 0,
+      lastReviewed: null,
+    },
+  ];
 
-    const flashcards = await client.fetch(query);
-    return flashcards;
+  async getFlashcards(): Promise<Flashcard[]> {
+    return this.flashcards;
   }
 
   async getFlashcardsByCategory(category: string): Promise<Flashcard[]> {
-    const query = `*[_type == "flashcard" && category == $category] {
-      "id": _id,
-      question,
-      answer,
-      category,
-      difficulty,
-      "timesReviewed": coalesce(timesReviewed, 0),
-      "lastReviewed": lastReviewed
-    }`;
-
-    const flashcards = await client.fetch(query, { category });
-    return flashcards;
+    return this.flashcards.filter((card) => card.category === category);
   }
 
   async createFlashcard(flashcard: InsertFlashcard): Promise<Flashcard> {
-    const doc = {
-      _type: 'flashcard',
+    const newFlashcard: Flashcard = {
       ...flashcard,
+      id: nanoid(),
       timesReviewed: 0,
       lastReviewed: null,
     };
-
-    const result = await client.create(doc);
-    return {
-      ...flashcard,
-      id: result._id,
-      timesReviewed: 0,
-      lastReviewed: null,
-    };
+    this.flashcards.push(newFlashcard);
+    return newFlashcard;
   }
 
   async updateFlashcardDifficulty(id: string, difficulty: number): Promise<Flashcard> {
-    const result = await client
-      .patch(id)
-      .set({ difficulty })
-      .commit();
-
-    return {
-      id: result._id,
-      question: result.question,
-      answer: result.answer,
-      category: result.category,
-      difficulty: result.difficulty,
-      timesReviewed: result.timesReviewed || 0,
-      lastReviewed: result.lastReviewed,
-    };
+    const flashcard = this.flashcards.find((f) => f.id === id);
+    if (!flashcard) {
+      throw new Error("Flashcard not found");
+    }
+    flashcard.difficulty = difficulty;
+    return flashcard;
   }
 
   async updateFlashcardReview(id: string): Promise<Flashcard> {
-    const now = new Date().toISOString();
-
-    // First get the current timesReviewed value
-    const currentDoc = await client.getDocument(id);
-    if (!currentDoc) {
+    const flashcard = this.flashcards.find((f) => f.id === id);
+    if (!flashcard) {
       throw new Error("Flashcard not found");
     }
-    const currentTimesReviewed = currentDoc.timesReviewed || 0;
-
-    const result = await client
-      .patch(id)
-      .set({
-        lastReviewed: now,
-        timesReviewed: currentTimesReviewed + 1
-      })
-      .commit();
-
-    return {
-      id: result._id,
-      question: result.question,
-      answer: result.answer,
-      category: result.category,
-      difficulty: result.difficulty,
-      timesReviewed: result.timesReviewed || 0,
-      lastReviewed: result.lastReviewed,
-    };
+    flashcard.timesReviewed += 1;
+    flashcard.lastReviewed = new Date().toISOString();
+    return flashcard;
   }
 }
 
-export const storage = new SanityStorage();
+export const storage = new MemStorage();
