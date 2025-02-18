@@ -13,7 +13,7 @@ function ensureAuthenticated(req: Express.Request, res: Express.Response, next: 
 }
 
 export async function registerRoutes(app: Express) {
-  // Set up authentication
+  // Set up authentication first
   setupAuth(app);
 
   // Serve Sanity Studio at /studio route
@@ -77,5 +77,6 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  return createServer(app);
+  const server = createServer(app);
+  return server;
 }

@@ -11,8 +11,9 @@ import { ProtectedRoute } from "@/lib/protected-route";
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={Home} />
+      {/* Place auth route first to prevent protected route from catching it */}
       <Route path="/auth" component={AuthPage} />
+      <ProtectedRoute path="/" component={Home} />
       <Route component={NotFound} />
     </Switch>
   );
