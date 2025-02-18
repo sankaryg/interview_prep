@@ -9,14 +9,16 @@ interface CategoryFilterProps {
 export function CategoryFilter({ selectedCategory, onSelectCategory }: CategoryFilterProps) {
   return (
     <Select
-      value={selectedCategory || "all"}
+      value={selectedCategory ?? "all"}
       onValueChange={(value) => onSelectCategory(value === "all" ? null : value)}
     >
       <SelectTrigger className="w-[200px]">
         <SelectValue placeholder="All Categories" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All Categories</SelectItem>
+        <SelectItem key="all" value="all">
+          All Categories
+        </SelectItem>
         {categories.map((category) => (
           <SelectItem key={category} value={category}>
             {category}

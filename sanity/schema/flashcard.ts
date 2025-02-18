@@ -21,12 +21,12 @@ export default {
       type: 'string',
       options: {
         list: [
-          'JavaScript',
-          'React',
-          'Data Structures',
-          'Algorithms',
-          'System Design',
-          'Behavioral',
+          {title: 'JavaScript', value: 'JavaScript'},
+          {title: 'React', value: 'React'},
+          {title: 'Data Structures', value: 'Data Structures'},
+          {title: 'Algorithms', value: 'Algorithms'},
+          {title: 'System Design', value: 'System Design'},
+          {title: 'Behavioral', value: 'Behavioral'},
         ],
       },
       validation: Rule => Rule.required(),
@@ -50,4 +50,10 @@ export default {
       type: 'datetime',
     },
   ],
+  preview: {
+    select: {
+      title: 'question',
+      subtitle: 'category',
+    },
+  },
 };

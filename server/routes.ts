@@ -2,8 +2,12 @@ import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
 import { insertFlashcardSchema } from "@shared/schema";
+import express from 'express'; //Import express
 
 export async function registerRoutes(app: Express) {
+  // Serve Sanity Studio at /studio route
+  app.use('/studio', express.static('sanity/dist'));
+
   app.get("/api/flashcards", async (req, res) => {
     const category = req.query.category as string | undefined;
     const flashcards = category
