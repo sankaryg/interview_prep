@@ -30,14 +30,14 @@ export function FlashcardComponent({ card }: FlashcardProps) {
   });
 
   return (
-    <div className="perspective-1000 relative w-full max-w-xl mx-auto h-[300px]">
+    <div className="relative w-full max-w-xl mx-auto h-[300px] [perspective:1000px]">
       <motion.div
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full h-full relative preserve-3d cursor-pointer"
+        className="w-full h-full relative [transform-style:preserve-3d] cursor-pointer"
         onClick={() => setIsFlipped(!isFlipped)}
       >
-        <Card className="absolute w-full h-full p-6 backface-hidden">
+        <Card className="absolute w-full h-full p-6 [backface-visibility:hidden]">
           <div className="flex flex-col h-full justify-between">
             <div className="text-lg font-medium">{card.question}</div>
             <div className="text-sm text-muted-foreground">
@@ -47,9 +47,9 @@ export function FlashcardComponent({ card }: FlashcardProps) {
         </Card>
 
         <Card 
-          className="absolute w-full h-full p-6 backface-hidden rotate-y-180 bg-primary text-primary-foreground"
+          className="absolute w-full h-full p-6 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-primary text-primary-foreground"
         >
-          <div className="flex flex-col h-full justify-between">
+          <div className="flex flex-col h-full justify-between [transform:rotateY(180deg)]">
             <div className="text-lg">{card.answer}</div>
             <div className="flex justify-center gap-4">
               <Button
