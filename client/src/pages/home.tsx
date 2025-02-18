@@ -5,18 +5,23 @@ import { CategoryFilter } from "@/components/category-filter";
 import { SearchBar } from "@/components/search-bar";
 import { type Flashcard } from "@shared/schema";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showDueOnly, setShowDueOnly] = useState(true);
 
   const { data: flashcards, isLoading } = useQuery<Flashcard[]>({
-    queryKey: ["/api/flashcards", selectedCategory],
+    queryKey: ["/api/flashcards", selectedCategory, showDueOnly],
     queryFn: async () => {
-      const url = selectedCategory
-        ? `/api/flashcards?category=${selectedCategory}`
-        : "/api/flashcards";
+      const params = new URLSearchParams();
+      if (selectedCategory) params.append("category", selectedCategory);
+      if (showDueOnly) params.append("due", "true");
+
+      const url = `/api/flashcards?${params.toString()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch flashcards");
       return response.json();
@@ -42,6 +47,14 @@ export default function Home() {
             onSelectCategory={setSelectedCategory}
           />
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          <div className="flex items-center gap-2">
+            <Switch
+              id="due-cards"
+              checked={showDueOnly}
+              onCheckedChange={setShowDueOnly}
+            />
+            <Label htmlFor="due-cards">Show due cards only</Label>
+          </div>
         </div>
 
         {isLoading ? (
@@ -56,7 +69,7 @@ export default function Home() {
             <div className="flex justify-center gap-4 mt-4">
               <button
                 className="text-sm text-muted-foreground hover:text-foreground"
-                onClick={() => setCurrentIndex((prev) => 
+                onClick={() => setCurrentIndex((prev) =>
                   prev > 0 ? prev - 1 : filteredCards.length - 1
                 )}
               >
@@ -67,7 +80,7 @@ export default function Home() {
               </span>
               <button
                 className="text-sm text-muted-foreground hover:text-foreground"
-                onClick={() => setCurrentIndex((prev) => 
+                onClick={() => setCurrentIndex((prev) =>
                   prev < filteredCards.length - 1 ? prev + 1 : 0
                 )}
               >

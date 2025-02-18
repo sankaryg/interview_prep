@@ -1,12 +1,14 @@
 import { flashcards, type Flashcard, type InsertFlashcard } from "@shared/schema";
+import { calculateNextReview } from "@shared/spaced-repetition";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
   getFlashcards(): Promise<Flashcard[]>;
   getFlashcardsByCategory(category: string): Promise<Flashcard[]>;
+  getDueFlashcards(): Promise<Flashcard[]>;
   updateFlashcardDifficulty(id: string, difficulty: number): Promise<Flashcard>;
   createFlashcard(flashcard: InsertFlashcard): Promise<Flashcard>;
-  updateFlashcardReview(id: string): Promise<Flashcard>;
+  updateFlashcardReview(id: string, quality: number): Promise<Flashcard>;
 }
 
 export class MemStorage implements IStorage {
@@ -19,6 +21,9 @@ export class MemStorage implements IStorage {
       difficulty: 0,
       timesReviewed: 0,
       lastReviewed: null,
+      easinessFactor: 2.5,
+      interval: 0,
+      nextReviewDate: null,
     },
     {
       id: "2",
@@ -28,11 +33,22 @@ export class MemStorage implements IStorage {
       difficulty: 0,
       timesReviewed: 0,
       lastReviewed: null,
+      easinessFactor: 2.5,
+      interval: 0,
+      nextReviewDate: null,
     },
   ];
 
   async getFlashcards(): Promise<Flashcard[]> {
     return this.flashcards;
+  }
+
+  async getDueFlashcards(): Promise<Flashcard[]> {
+    const now = new Date();
+    return this.flashcards.filter(card => {
+      if (!card.nextReviewDate) return true;
+      return new Date(card.nextReviewDate) <= now;
+    });
   }
 
   async getFlashcardsByCategory(category: string): Promise<Flashcard[]> {
@@ -45,6 +61,9 @@ export class MemStorage implements IStorage {
       id: nanoid(),
       timesReviewed: 0,
       lastReviewed: null,
+      easinessFactor: 2.5,
+      interval: 0,
+      nextReviewDate: null,
     };
     this.flashcards.push(newFlashcard);
     return newFlashcard;
@@ -59,13 +78,24 @@ export class MemStorage implements IStorage {
     return flashcard;
   }
 
-  async updateFlashcardReview(id: string): Promise<Flashcard> {
+  async updateFlashcardReview(id: string, quality: number): Promise<Flashcard> {
     const flashcard = this.flashcards.find((f) => f.id === id);
     if (!flashcard) {
       throw new Error("Flashcard not found");
     }
+
+    const { easinessFactor, interval, nextReviewDate } = calculateNextReview(quality, {
+      easinessFactor: flashcard.easinessFactor,
+      interval: flashcard.interval,
+      nextReviewDate: flashcard.nextReviewDate,
+    });
+
+    flashcard.easinessFactor = easinessFactor;
+    flashcard.interval = interval;
+    flashcard.nextReviewDate = nextReviewDate;
     flashcard.timesReviewed += 1;
     flashcard.lastReviewed = new Date().toISOString();
+
     return flashcard;
   }
 }

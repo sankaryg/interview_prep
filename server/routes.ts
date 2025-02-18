@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { insertFlashcardSchema } from "@shared/schema";
-import express from 'express'; //Import express
+import { insertFlashcardSchema, QUALITY_RATINGS } from "@shared/schema";
+import express from 'express';
 
 export async function registerRoutes(app: Express) {
   // Serve Sanity Studio at /studio route
@@ -10,9 +10,16 @@ export async function registerRoutes(app: Express) {
 
   app.get("/api/flashcards", async (req, res) => {
     const category = req.query.category as string | undefined;
-    const flashcards = category
-      ? await storage.getFlashcardsByCategory(category)
-      : await storage.getFlashcards();
+    const dueOnly = req.query.due === 'true';
+
+    let flashcards;
+    if (dueOnly) {
+      flashcards = await storage.getDueFlashcards();
+    } else {
+      flashcards = category
+        ? await storage.getFlashcardsByCategory(category)
+        : await storage.getFlashcards();
+    }
     res.json(flashcards);
   });
 
@@ -43,8 +50,14 @@ export async function registerRoutes(app: Express) {
 
   app.post("/api/flashcards/:id/review", async (req, res) => {
     const id = req.params.id;
+    const { quality } = req.body;
+
+    if (!Object.values(QUALITY_RATINGS).includes(quality)) {
+      return res.status(400).json({ error: "Invalid quality rating" });
+    }
+
     try {
-      const flashcard = await storage.updateFlashcardReview(id);
+      const flashcard = await storage.updateFlashcardReview(id, quality);
       res.json(flashcard);
     } catch (error) {
       res.status(404).json({ error: "Flashcard not found" });
