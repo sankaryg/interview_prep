@@ -31,10 +31,9 @@ export function FlashcardComponent({ card }: FlashcardProps) {
 
   return (
     <div className="relative w-full max-w-xl mx-auto h-[300px] [perspective:1000px]">
-      <motion.div
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full h-full relative [transform-style:preserve-3d] cursor-pointer"
+      <div
+        className="w-full h-full relative [transform-style:preserve-3d] transition-transform duration-500 cursor-pointer"
+        style={{ transform: isFlipped ? 'rotateY(180deg)' : '' }}
         onClick={() => setIsFlipped(!isFlipped)}
       >
         {/* Front of card */}
@@ -52,7 +51,7 @@ export function FlashcardComponent({ card }: FlashcardProps) {
           className="absolute w-full h-full p-6 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-primary text-primary-foreground"
         >
           <div className="flex flex-col h-full justify-between">
-            <div className="text-lg">{card.answer}</div>
+            <div className="text-lg whitespace-pre-wrap">{card.answer}</div>
             <div className="flex justify-center gap-4">
               <Button
                 variant="secondary"
@@ -77,7 +76,7 @@ export function FlashcardComponent({ card }: FlashcardProps) {
             </div>
           </div>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }
