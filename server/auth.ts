@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as GitHubStrategy } from "passport-github2";
-import { Strategy as FacebookStrategy } from "passport-facebook";
+
 import { Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
@@ -89,26 +89,7 @@ export function setupAuth(app: Express) {
     }
   }));
 
-  // Facebook OAuth
-  passport.use(new FacebookStrategy({
-    clientID: process.env.FACEBOOK_APP_ID!,
-    clientSecret: process.env.FACEBOOK_APP_SECRET!,
-    callbackURL: "/auth/facebook/callback",
-    profileFields: ['id', 'emails', 'name']
-  }, async (accessToken, refreshToken, profile, done) => {
-    try {
-      let user = await storage.getUserByUsername(profile.emails![0].value);
-      if (!user) {
-        user = await storage.createUser({
-          username: profile.emails![0].value,
-          password: `facebook-${profile.id}`,
-        });
-      }
-      return done(null, user);
-    } catch (error) {
-      return done(error);
-    }
-  }));
+  
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {

@@ -116,9 +116,7 @@ export default function AuthPage() {
                         <Button variant="outline" onClick={() => window.location.href = "/auth/github"}>
                           GitHub
                         </Button>
-                        <Button variant="outline" onClick={() => window.location.href = "/auth/facebook"}>
-                          Facebook
-                        </Button>
+                        
                       </div>
                     </div>
                   </form>
