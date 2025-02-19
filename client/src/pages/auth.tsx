@@ -89,13 +89,38 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={loginMutation.isPending}
-                    >
-                      {loginMutation.isPending ? "Logging in..." : "Login"}
-                    </Button>
+                    <div className="space-y-4">
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={loginMutation.isPending}
+                      >
+                        {loginMutation.isPending ? "Logging in..." : "Login"}
+                      </Button>
+                      
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-background px-2 text-muted-foreground">
+                            Or continue with
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button variant="outline" onClick={() => window.location.href = "/auth/google"}>
+                          Google
+                        </Button>
+                        <Button variant="outline" onClick={() => window.location.href = "/auth/github"}>
+                          GitHub
+                        </Button>
+                        <Button variant="outline" onClick={() => window.location.href = "/auth/facebook"}>
+                          Facebook
+                        </Button>
+                      </div>
+                    </div>
                   </form>
                 </Form>
               </TabsContent>
