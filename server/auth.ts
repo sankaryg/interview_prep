@@ -89,7 +89,7 @@ export function setupAuth(app: Express) {
     }
   }));
 
-  
+
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
