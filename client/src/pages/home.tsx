@@ -8,6 +8,27 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
+// Placeholder for useAuth hook
+const useAuth = () => {
+  const [user, setUser] = useState(null);
+  const logoutMutation = {
+    mutate: () => {
+      // Placeholder logout logic - replace with actual implementation
+      console.log("Logging out...");
+      setUser(null);
+    },
+    isPending: false,
+  };
+  return { user, logoutMutation };
+};
+
+// Placeholder for Button component
+const Button = ({ children, onClick, variant, disabled }) => (
+  <button onClick={onClick} disabled={disabled} className={`bg-${variant === 'outline' ? 'transparent' : 'blue-500'} hover:bg-blue-700 text-white font-bold py-2 px-4 rounded`}>
+    {children}
+  </button>
+);
+
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +57,8 @@ export default function Home() {
     },
   });
 
+  const { logoutMutation } = useAuth(); // Added logoutMutation
+
   const filteredCards = flashcards?.filter((card) =>
     card.question.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -63,6 +86,17 @@ export default function Home() {
             />
             <Label htmlFor="due-cards">Show due cards only</Label>
           </div>
+        </div>
+
+        <div className="flex items-center justify-between space-y-2"> {/* Added div for logout button */}
+          <h2 className="text-3xl font-bold tracking-tight">Welcome back!</h2>
+          <Button 
+            variant="outline" 
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+          >
+            {logoutMutation.isPending ? "Logging out..." : "Logout"}
+          </Button>
         </div>
 
         {isLoading ? (
