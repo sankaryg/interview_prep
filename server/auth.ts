@@ -147,6 +147,17 @@ export function setupAuth(app: Express) {
     });
   });
 
+  app.get("/auth/google", passport.authenticate("google", {
+    scope: ["profile", "email"]
+  }));
+
+  app.get("/auth/google/callback",
+    passport.authenticate("google", {
+      failureRedirect: "/auth",
+      successRedirect: "/"
+    })
+  );
+
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
