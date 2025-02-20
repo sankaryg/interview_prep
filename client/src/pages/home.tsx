@@ -8,26 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-// Placeholder for useAuth hook
-const useAuth = () => {
-  const [user, setUser] = useState(null);
-  const logoutMutation = {
-    mutate: () => {
-      // Placeholder logout logic - replace with actual implementation
-      console.log("Logging out...");
-      setUser(null);
-    },
-    isPending: false,
-  };
-  return { user, logoutMutation };
-};
-
-// Placeholder for Button component
-const Button = ({ children, onClick, variant, disabled }) => (
-  <button onClick={onClick} disabled={disabled} className={`bg-${variant === 'outline' ? 'transparent' : 'blue-500'} hover:bg-blue-700 text-white font-bold py-2 px-4 rounded`}>
-    {children}
-  </button>
-);
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
