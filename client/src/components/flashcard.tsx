@@ -1,12 +1,18 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type Flashcard, QUALITY_RATINGS } from "@shared/schema";
 import { ThumbsUp, ThumbsDown, Meh } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getFlashcards, getFlashcardsByCategory } from "@/lib/queries";
+
+const useFlashcards = (category?: string) => {
+  return useQuery({
+    queryKey: ['flashcards', category],
+    queryFn: () => category ? getFlashcardsByCategory(category) : getFlashcards()
+  });
+};
 
 interface FlashcardProps {
   card: Flashcard;
