@@ -1,50 +1,33 @@
-import { defineType } from 'sanity';
+import { defineField, defineType } from 'sanity'
 
 export default defineType({
   name: 'flashcard',
   title: 'Flashcard',
   type: 'document',
   fields: [
-    {
+    defineField({
       name: 'question',
       title: 'Question',
       type: 'string',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
       name: 'answer',
       title: 'Answer',
       type: 'text',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
       name: 'category',
       title: 'Category',
       type: 'string',
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
       name: 'difficulty',
       title: 'Difficulty',
       type: 'number',
-      validation: (Rule: any) => Rule.required().min(1).max(5),
-    },
-    {
-      name: 'timesReviewed',
-      title: 'Times Reviewed',
-      type: 'number',
-      initialValue: 0,
-    },
-    {
-      name: 'lastReviewed',
-      title: 'Last Reviewed',
-      type: 'datetime',
-    },
+      validation: Rule => Rule.required().min(1).max(5),
+    }),
   ],
-  preview: {
-    select: {
-      title: 'question',
-      subtitle: 'category',
-    },
-  },
-});
+})

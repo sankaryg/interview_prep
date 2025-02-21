@@ -7,8 +7,9 @@ import { schemaTypes } from './schema'
 export default defineConfig({
   name: 'default',
   title: 'Flashcard App',
-  projectId: process.env.SANITY_PROJECT_ID || '',
-  dataset: process.env.SANITY_DATASET || 'production',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  basePath: '/studio',
   plugins: [deskTool(), visionTool()],
   schema: {
     types: schemaTypes,
