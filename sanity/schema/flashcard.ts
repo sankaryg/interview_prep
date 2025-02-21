@@ -1,53 +1,45 @@
-import { defineField, defineType } from 'sanity';
-import { categories } from '../../shared/schema';
+import { defineType } from 'sanity';
 
 export default defineType({
   name: 'flashcard',
   title: 'Flashcard',
   type: 'document',
   fields: [
-    defineField({
+    {
       name: 'question',
       title: 'Question',
-      type: 'text',
-      validation: Rule => Rule.required(),
-    }),
-    defineField({
+      type: 'string',
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
       name: 'answer',
       title: 'Answer',
       type: 'text',
-      validation: Rule => Rule.required(),
-    }),
-    defineField({
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
       name: 'category',
       title: 'Category',
       type: 'string',
-      options: {
-        list: categories.map(category => ({
-          title: category,
-          value: category,
-        })),
-      },
-      validation: Rule => Rule.required(),
-    }),
-    defineField({
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
       name: 'difficulty',
       title: 'Difficulty',
       type: 'number',
-      initialValue: 0,
-      validation: Rule => Rule.min(-1).max(1),
-    }),
-    defineField({
+      validation: (Rule: any) => Rule.required().min(1).max(5),
+    },
+    {
       name: 'timesReviewed',
       title: 'Times Reviewed',
       type: 'number',
       initialValue: 0,
-    }),
-    defineField({
+    },
+    {
       name: 'lastReviewed',
       title: 'Last Reviewed',
       type: 'datetime',
-    }),
+    },
   ],
   preview: {
     select: {
