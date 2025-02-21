@@ -7,8 +7,8 @@ export default defineConfig({
   name: 'default',
   title: 'InterviewPrep',
 
-  projectId: process.env.SANITY_PROJECT_ID || '',
-  dataset: process.env.SANITY_DATASET || 'production',
+  projectId: '8zqool9s',
+  dataset: 'production',
 
   plugins: [structureTool(), visionTool()],
 
